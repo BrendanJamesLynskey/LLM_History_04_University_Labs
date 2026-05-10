@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM History 04 &mdash; University Labs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; --bg-card: #0d1117; --bg-code: #161b22;
+            --text-primary: #e6edf3; --text-secondary: #8b949e;
+            --accent: #A371F7; --accent-dim: #A371F744; --accent-glow: #A371F733;
+            --accent-2: #FF7B72; --accent-3: #F0A726; --accent-4: #3FB950;
+            --border: #21262d;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+            --max-width: 900px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-body); font-size: 17px; line-height: 1.7; overflow-x: hidden; }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem 1.5rem; text-align: center; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 700px; height: 600px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+        .hero > * { position: relative; z-index: 1; }
+        .series-label { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+        .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; color: var(--text-primary); line-height: 1.2; margin-bottom: 1rem; }
+        .hero h1 .accent { color: var(--accent); }
+        .hero .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 640px; margin-bottom: 2rem; }
+        .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; }
+        .tag { font-family: var(--font-mono); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-dim); white-space: nowrap; }
+        .tag.r { border-color: var(--accent-2); color: var(--accent-2); background: rgba(255,123,114,0.10); }
+        .tag.y { border-color: var(--accent-3); color: var(--accent-3); background: rgba(240,167,38,0.10); }
+        .tag.g { border-color: var(--accent-4); color: var(--accent-4); background: rgba(63,185,80,0.10); }
+        .pipeline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem; margin-bottom: 1rem; max-width: var(--max-width); }
+        .pipeline-step { font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.7rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); white-space: nowrap; }
+        .pipeline-arrow { color: var(--accent); font-size: 0.9rem; font-weight: 700; }
+        .slide { min-height: 100vh; max-width: var(--max-width); margin: 0 auto; padding: 4rem 1.5rem; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        .slide-number { font-family: var(--font-display); font-size: 5rem; font-weight: 700; color: var(--accent-dim); position: absolute; top: 2rem; right: 1.5rem; line-height: 1; user-select: none; }
+        .slide h2 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.25; }
+        .slide h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .slide p { margin-bottom: 1rem; color: var(--text-secondary); }
+        .slide p strong { color: var(--text-primary); }
+        .slide ul, .slide ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-secondary); }
+        .slide li { margin-bottom: 0.4rem; }
+        .slide li strong { color: var(--text-primary); }
+        .slide code { font-family: var(--font-mono); font-size: 0.88em; background: var(--bg-code); padding: 0.1rem 0.35rem; border-radius: 3px; color: var(--accent); }
+        .table-wrap { overflow-x: auto; margin: 1.25rem 0; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: var(--bg-code); color: var(--accent); font-weight: 600; text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-family: var(--font-display); white-space: nowrap; }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: rgba(13, 17, 23, 0.5); }
+        .diagram-grid { display: grid; gap: 0.75rem; margin: 1.5rem 0; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; }
+        .diagram-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .diagram-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .diagram-panel { padding: 1rem; background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px; }
+        .diagram-panel.accent-border { border-left: 3px solid var(--accent); }
+        .diagram-panel.r { border-left: 3px solid var(--accent-2); }
+        .diagram-panel.y { border-left: 3px solid var(--accent-3); }
+        .diagram-panel.g { border-left: 3px solid var(--accent-4); }
+        .diagram-panel h4 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .diagram-panel.r h4 { color: var(--accent-2); }
+        .diagram-panel.y h4 { color: var(--accent-3); }
+        .diagram-panel.g h4 { color: var(--accent-4); }
+        .diagram-panel p, .diagram-panel ul { font-size: 0.9rem; }
+        .callout { background: var(--bg-card); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+        .callout p { margin-bottom: 0; }
+        .callout .callout-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+        .callout.r { border-left-color: var(--accent-2); } .callout.r .callout-label { color: var(--accent-2); }
+        .callout.y { border-left-color: var(--accent-3); } .callout.y .callout-label { color: var(--accent-3); }
+        .callout.g { border-left-color: var(--accent-4); } .callout.g .callout-label { color: var(--accent-4); }
+        .quote { font-family: var(--font-display); font-size: 1.15rem; font-style: italic; color: var(--text-primary); padding: 1rem 1.5rem; border-left: 3px solid var(--accent); background: var(--bg-card); margin: 1.25rem 0; border-radius: 0 8px 8px 0; }
+        .quote .attr { display: block; margin-top: 0.5rem; font-style: normal; font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); }
+        .contents-list { list-style: none; padding-left: 0; counter-reset: contents; }
+        .contents-list li { counter-increment: contents; padding: 0.6rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+        .contents-list li:last-child { border-bottom: none; }
+        .contents-list li::before { content: counter(contents, decimal-leading-zero); font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); min-width: 2rem; }
+        .contents-list a { color: var(--text-primary); text-decoration: none; }
+        .contents-list a:hover { color: var(--accent); }
+        .footer { text-align: center; padding: 3rem 1.5rem; color: var(--text-secondary); font-size: 0.85rem; border-top: 1px solid var(--border); max-width: var(--max-width); margin: 0 auto; }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .person-card { display: grid; grid-template-columns: 90px 1fr; gap: 1rem; padding: 1rem; background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.6rem; }
+        .person-photo { width: 90px; height: 90px; border-radius: 50%; background: var(--accent-dim); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--accent); }
+        .person-card h4 { font-family: var(--font-display); margin-bottom: 0.2rem; color: var(--text-primary); }
+        .person-card .role { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+        .person-card p { font-size: 0.88rem; margin: 0; }
+        .lab-block { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1.25rem 1.5rem; margin: 1rem 0; }
+        .lab-block h3 { color: var(--accent); margin-top: 0; }
+        .lab-block .lab-meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        @media (max-width: 640px) {
+            .slide { padding: 3rem 1rem; min-height: auto; }
+            .slide-number { font-size: 3rem; top: 1.5rem; right: 1rem; }
+            .slide h2 { font-size: 1.5rem; }
+            .diagram-grid.cols-2, .diagram-grid.cols-3 { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+            table { font-size: 0.78rem; }
+            .person-card { grid-template-columns: 60px 1fr; }
+            .person-photo { width: 60px; height: 60px; font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="series-label">LLM History Series &mdash; Presentation 04</div>
+    <h1>University Labs &mdash; <span class="accent">Where the Ideas Were Forged</span></h1>
+    <p class="subtitle">A guided tour of the dozen academic groups that produced almost every senior researcher at the modern frontier labs. The lineages, the rivalries, the pipelines into industry, and what the labs look like now that most of their best graduates leave for OpenAI on day one.</p>
+
+    <div class="tags">
+        <span class="tag">Toronto</span><span class="tag">Mila</span><span class="tag y">Stanford</span><span class="tag y">CMU</span>
+        <span class="tag g">NYU</span><span class="tag g">Berkeley</span><span class="tag r">MIT</span><span class="tag r">Princeton</span>
+    </div>
+
+    <div class="pipeline">
+        <span class="pipeline-step">Hinton</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Bengio</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">LeCun</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">a generation of advisors</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">~200 senior ICs</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">today's frontier labs</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>What This Deck Covers</h2>
+    <p>An anatomy of the academic side of the field. Twelve labs, each with a short technical contribution list and a list of the people who came out of it. The deck pays particular attention to the <em>advisor tree</em> &mdash; who trained whom &mdash; because in a field this small, the family tree is half the story.</p>
+    <ul class="contents-list">
+        <li><a href="#slide-01">Why University Labs Mattered (And Why They Matter Less Now)</a></li>
+        <li><a href="#slide-02">Toronto &mdash; Hinton's Lab</a></li>
+        <li><a href="#slide-03">Mila / Montreal &mdash; Bengio</a></li>
+        <li><a href="#slide-04">Stanford NLP &mdash; Manning</a></li>
+        <li><a href="#slide-05">Stanford ML &mdash; Ng, Liang, R&eacute;, Koller</a></li>
+        <li><a href="#slide-06">NYU &mdash; LeCun, Cho, Bottou</a></li>
+        <li><a href="#slide-07">CMU &mdash; Mitchell, Salakhutdinov, Cohen</a></li>
+        <li><a href="#slide-08">Berkeley &mdash; Russell, Abbeel, Song, Darrell</a></li>
+        <li><a href="#slide-09">MIT, Princeton, Allen AI &amp; Others</a></li>
+        <li><a href="#slide-10">The Advisor Tree</a></li>
+        <li><a href="#slide-11">Why Industry Took Over</a></li>
+        <li><a href="#slide-12">Cheat Sheet</a></li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>Why University Labs Mattered (And Why They Matter Less Now)</h2>
+    <p>For most of the period covered by deck 02 &mdash; that is, 1948 to 2018 &mdash; the centre of gravity of NLP research was university labs and their close cousins (IBM Watson, Bell Labs, MSR, BBN). The transformer paper itself came out of an industry lab, but most of its <em>authors</em> were trained in academia, and most of the ideas it integrated came from academic work.</p>
+
+    <p>Three things were true that no longer are:</p>
+
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border">
+            <h4>1. Frontier compute was tractable</h4>
+            <p>State-of-the-art models in 2014 trained on a handful of GPUs. By 2017 you needed a small TPU pod. By 2024 you need a $100 M cluster. Academic groups simply cannot run frontier experiments anymore.</p>
+        </div>
+        <div class="diagram-panel y">
+            <h4>2. Knowledge was published</h4>
+            <p>Pre-2022 the best research was published with code. Post-2022 frontier model details (data mixes, RL recipes, alignment infrastructure) are increasingly proprietary. Academic groups can read the public papers but cannot replicate frontier behaviour.</p>
+        </div>
+        <div class="diagram-panel g">
+            <h4>3. Talent stayed</h4>
+            <p>A senior PhD student in 2015 expected to take a postdoc and then a faculty job. By 2024 the equivalent person mostly goes straight to a frontier lab on $1&ndash;3 M/year compensation. The faculty pipeline is collapsing.</p>
+        </div>
+    </div>
+
+    <div class="callout">
+        <div class="callout-label">What university labs still do well</div>
+        <p>Mechanistic interpretability, evals, scientific applications (biology, materials), small-model architecture exploration, theory, and training the next generation of researchers. The biggest scientific contributions of academic NLP in the LLM era have come from <em>not</em> trying to compete on frontier capabilities &mdash; the Princeton/Anthropic interp work, Stanford CRFM's evals (HELM), MIT's robotics-foundation-model work, Mila's safety-focused programme.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>Toronto &mdash; Hinton's Lab</h2>
+    <div class="lab-block">
+        <div class="lab-meta">University of Toronto Department of Computer Science &middot; Vector Institute (founded 2017) &middot; Toronto, Canada</div>
+        <h3>The lab that kept neural nets alive</h3>
+        <p>Hinton joined Toronto in 1987 (after a stint at CMU) and stayed in Canada essentially because Canadian funding still backed neural networks when most of the field had moved on. The Canadian Institute for Advanced Research's CIFAR programme, run with Bengio and LeCun, kept a small but tightly connected community alive through the 1990s and 2000s.</p>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">GH</div>
+        <div>
+            <h4>Geoffrey Hinton</h4>
+            <div class="role">Toronto 1987&ndash;present (emeritus); Google Brain 2013&ndash;2023</div>
+            <p>British, descended from George Boole and educated at Cambridge and Edinburgh. Hard-line on the centrality of representation learning. A famously socratic supervisor &mdash; he asks more questions than he gives answers and his lab is run consensually. Resigned Google in May 2023 specifically to be free to speak about AI risk; subsequently shared the 2024 Nobel Prize in Physics with John Hopfield.</p>
+        </div>
+    </div>
+
+    <h3>Selected Hinton-trained alumni who went on to define the modern field</h3>
+    <ul>
+        <li><strong>Ilya Sutskever</strong> &mdash; PhD with Hinton 2013. Co-author AlexNet. Co-founder OpenAI 2015. Founder Safe Superintelligence 2024.</li>
+        <li><strong>Alex Krizhevsky</strong> &mdash; PhD student. AlexNet first author. Briefly at Google Brain.</li>
+        <li><strong>Ruslan Salakhutdinov</strong> &mdash; PhD, then CMU faculty, then ran Apple's ML research (2016&ndash;2020).</li>
+        <li><strong>Alex Graves</strong> &mdash; postdoc; LSTM/CTC; DeepMind.</li>
+        <li><strong>Volodymyr Mnih</strong> &mdash; PhD; DQN, the Atari paper that founded modern deep RL; DeepMind.</li>
+        <li><strong>Oriol Vinyals</strong> &mdash; collaborator; seq2seq; AlphaGo lead engineer; now VP at DeepMind.</li>
+        <li><strong>James Martens</strong> &mdash; PhD; second-order optimisation, Hessian-free; DeepMind.</li>
+        <li><strong>Nitish Srivastava</strong> &mdash; PhD; dropout; Apple.</li>
+        <li><strong>Tijmen Tieleman</strong> &mdash; PhD; RMSProp; Apple.</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-label">The 2018 split</div>
+        <p>When Hinton co-founded the Vector Institute in 2017, the bargain was that frontier-leaning Toronto researchers would have a Canadian industry-aligned home rather than leaving for the US. It worked partially &mdash; Cohere's three founders are all Toronto-aligned, and Vector itself is well-funded. But Sutskever, Krizhevsky, Mnih, Graves and Vinyals had all already gone south by then.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>Mila / Montreal &mdash; Bengio</h2>
+    <div class="lab-block">
+        <div class="lab-meta">Mila &mdash; Quebec AI Institute &middot; affiliated with Universit&eacute; de Montr&eacute;al &amp; McGill &middot; Montreal, Canada</div>
+        <h3>The largest deep-learning academic group in the world</h3>
+        <p>Mila started in 2017 as a formal expansion of Bengio's research group at Universit&eacute; de Montr&eacute;al, with backing from the Quebec government. By 2026 it has roughly 1,000 affiliated researchers (faculty, students, postdocs). Bengio's own students dominate the senior ranks of the modern field as much as Hinton's do.</p>
+    </div>
+
+    <h3>Selected Mila / Bengio alumni</h3>
+    <ul>
+        <li><strong>Ian Goodfellow</strong> &mdash; PhD; GANs (2014); Google &rarr; Apple Director of ML &rarr; DeepMind.</li>
+        <li><strong>Aaron Courville</strong> &mdash; postdoc, then Mila faculty; co-author of the <em>Deep Learning</em> textbook.</li>
+        <li><strong>Hugo Larochelle</strong> &mdash; PhD; Google Brain Montreal lead; Cohere.</li>
+        <li><strong>Kyunghyun Cho</strong> &mdash; postdoc; GRU; encoder-decoder; NYU faculty.</li>
+        <li><strong>Dzmitry Bahdanau</strong> &mdash; PhD; attention paper; Mila faculty.</li>
+        <li><strong>Arthur Mensch</strong> &mdash; PhD-era visitor; later DeepMind; co-founder of Mistral.</li>
+        <li><strong>Junyoung Chung</strong> &mdash; PhD; speech-language models; DeepMind / Google.</li>
+        <li><strong>Caglar Gulcehre</strong> &mdash; PhD; reinforcement learning; DeepMind.</li>
+        <li><strong>Sebastian Ruder</strong> &mdash; postdoc-affiliate; Cohere.</li>
+        <li><strong>David Krueger</strong> &mdash; PhD; AI safety; Cambridge faculty &rarr; UK AISI.</li>
+    </ul>
+
+    <div class="callout y">
+        <div class="callout-label">Bengio's late-career pivot</div>
+        <p>Bengio is unusual among the godfathers in having pivoted, in his sixties, away from capability research and almost entirely toward AI-safety research. His <a href="https://yoshuabengio.org">writing</a> from 2023 onward is some of the more lucid public material on existential and catastrophic AI risk by a senior practitioner. Mila has accordingly oriented a meaningful fraction of its work toward safety and interpretability.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Stanford NLP &mdash; Manning</h2>
+    <div class="lab-block">
+        <div class="lab-meta">Stanford NLP Group &middot; Stanford Computer Science &middot; Stanford HAI &middot; Stanford CRFM &middot; California</div>
+        <h3>The most influential NLP-focused lab</h3>
+        <p>Run by <strong>Christopher Manning</strong> since the early 2000s, Stanford NLP has produced more first-rank NLP researchers than any other group. The lab's work is strikingly broad &mdash; parsing, semantics, IR, dialogue, evaluation, theory, embeddings &mdash; and its alumni populate every frontier lab.</p>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">CDM</div>
+        <div>
+            <h4>Christopher D. Manning</h4>
+            <div class="role">Stanford NLP director, Stanford HAI co-director</div>
+            <p>Australian; PhD at Stanford under Joan Bresnan, faculty at CMU briefly, then Stanford from 1999. Famously calm, methodical, prolific. The author (with Sch&uuml;tze) of <em>Foundations of Statistical Natural Language Processing</em>, the textbook that taught a generation. His <em>Stanford CS224N</em> course is the most widely watched NLP course on the internet.</p>
+        </div>
+    </div>
+
+    <h3>Selected Stanford NLP alumni</h3>
+    <ul>
+        <li><strong>Andrej Karpathy</strong> &mdash; PhD with Fei-Fei Li (CV) but very close to Manning's group; OpenAI co-founder; Tesla; back at OpenAI; YouTube educator.</li>
+        <li><strong>Richard Socher</strong> &mdash; PhD; recursive neural nets; Salesforce Chief Scientist; founder of you.com.</li>
+        <li><strong>Jeffrey Pennington</strong> &mdash; postdoc; GloVe; Google Brain.</li>
+        <li><strong>Danqi Chen</strong> &mdash; PhD; reading comprehension; Princeton faculty (see slide 09).</li>
+        <li><strong>Kelvin Guu</strong> &mdash; PhD; retrieval-augmented LMs; Google Research.</li>
+        <li><strong>Percy Liang</strong> &mdash; faculty colleague; sees slide 05.</li>
+        <li><strong>Tatsunori Hashimoto</strong> &mdash; faculty; Stanford CRFM core.</li>
+        <li><strong>Hugh Chen, Eric Mitchell, Sang Michael Xie, Robin Jia</strong> &mdash; recent PhDs spread across OpenAI, Anthropic, Google.</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-label">Stanford CRFM and HELM</div>
+        <p>The <strong>Center for Research on Foundation Models</strong> (CRFM, launched 2021) and its <strong>HELM</strong> evaluation framework are Stanford's flagship LLM-era institutions. CRFM is, in effect, an attempt to organise frontier-adjacent academic research at a scale that can stay relevant: shared compute, public benchmarks, and collaborations with frontier labs to evaluate models. It is the only academic effort that has had measurable influence on frontier-lab evaluation practice.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>Stanford ML &mdash; Ng, Liang, R&eacute;, Koller</h2>
+    <p>The non-NLP side of Stanford's ML programme has its own trajectory. Andrew Ng's lab in the late 2000s and early 2010s trained much of the core early Google Brain cohort; Percy Liang's group took over much of the formal-LLM work in the 2020s; Christopher R&eacute;'s lab on data-centric AI runs in parallel.</p>
+
+    <div class="person-card">
+        <div class="person-photo">AN</div>
+        <div>
+            <h4>Andrew Ng</h4>
+            <div class="role">Stanford 2002&ndash;present; Google Brain co-founder; Coursera co-founder; Baidu Chief Scientist 2014&ndash;2017; Landing AI</div>
+            <p>British-born, Hong-Kong-raised, MIT and Berkeley educated. Ran Stanford's flagship <em>CS229 Machine Learning</em> for years, putting it on Coursera and effectively kick-starting modern online ML education. Co-founded Google Brain in 2011. Quietly one of the most consequential ML educators ever; his early students include Quoc Le and Adam Coates.</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">PL</div>
+        <div>
+            <h4>Percy Liang</h4>
+            <div class="role">Stanford faculty; Stanford CRFM director</div>
+            <p>Did his PhD at Berkeley (Klein) and MIT (Tommi Jaakkola), joined Stanford in 2012. Crystal-clear writing style, runs the most empirically rigorous LLM-evaluation programme in academia. HELM, prompt engineering early work, and a lot of the post-2022 conceptual framing of LLM behaviour comes from his group.</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">CR</div>
+        <div>
+            <h4>Christopher R&eacute;</h4>
+            <div class="role">Stanford faculty; co-founder SambaNova, Together AI, Snorkel AI</div>
+            <p>The most successful entrepreneurial Stanford ML faculty member in this generation. Mamba and the entire state-space-model line came partly out of his lab (Albert Gu was his PhD student). Together AI is one of the leading inference-serving companies; SambaNova builds AI ASIC racks. Three concurrent serious companies is unusual for a sitting professor.</p>
+        </div>
+    </div>
+
+    <h3>Selected alumni</h3>
+    <ul>
+        <li><strong>Quoc Le</strong> &mdash; Ng PhD; Google Brain; AutoML; Bard / Gemini.</li>
+        <li><strong>Pieter Abbeel</strong> &mdash; Ng PhD; Berkeley faculty (slide 08); Covariant; OpenAI.</li>
+        <li><strong>Andrew Maas</strong> &mdash; Ng PhD; Roam; Tesla.</li>
+        <li><strong>Adam Coates</strong> &mdash; Ng PhD; Baidu.</li>
+        <li><strong>Albert Gu</strong> &mdash; R&eacute; PhD; CMU faculty; Mamba; co-founder Cartesia.</li>
+        <li><strong>Tri Dao</strong> &mdash; R&eacute; PhD; Princeton faculty; FlashAttention; Together AI.</li>
+        <li><strong>Sang Michael Xie, Tatsunori Hashimoto</strong> &mdash; Liang's recent group, now key alignment-evals figures.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>NYU &mdash; LeCun, Cho, Bottou</h2>
+    <div class="lab-block">
+        <div class="lab-meta">NYU Courant Institute &middot; NYU CILVR &middot; NYU Center for Data Science &middot; New York City</div>
+        <h3>The east-coast neural-net stronghold</h3>
+        <p>NYU is the nearest US-coast equivalent to Toronto. LeCun moved from Bell Labs to NYU in 2003 and built a small but tight neural-nets group. Kyunghyun Cho's arrival in 2015 added a second strong NLP voice; L&eacute;on Bottou's intermittent affiliations and Rob Fergus's CV work fill out the picture.</p>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">YL</div>
+        <div>
+            <h4>Yann LeCun</h4>
+            <div class="role">NYU professor (joined 2003); Meta AI / FAIR Chief Scientist (since 2013)</div>
+            <p>French. PhD in Paris, postdoc with Hinton in Toronto, then Bell Labs (1989&ndash;1996) where he built LeNet and ran the convolutional-net programme. The most public of the godfathers &mdash; he is on Twitter daily, picks fights with Marcus and others on AGI roadmaps, and is the loudest senior advocate for open-weight frontier research. Joint Turing Award 2018. JEPA / world-model proposal is his current research bet against the pure-LLM roadmap.</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">KC</div>
+        <div>
+            <h4>Kyunghyun Cho</h4>
+            <div class="role">NYU faculty (since 2015); Genentech research director (currently on leave)</div>
+            <p>Korean. Already covered as a Mila postdoc in deck 02; ran a strong NYU group focused on encoder-decoder generative models and applications to biology. Currently leading drug-discovery foundation-model work at Genentech.</p>
+        </div>
+    </div>
+
+    <h3>Selected NYU alumni</h3>
+    <ul>
+        <li><strong>Sumit Chopra</strong> &mdash; LeCun PhD; Facebook AI; NYU Med.</li>
+        <li><strong>Mikael Henaff, Alfredo Canziani, Pablo Sprechmann</strong> &mdash; LeCun students.</li>
+        <li><strong>He He</strong> &mdash; faculty; alignment, evals.</li>
+        <li><strong>Sam Bowman</strong> &mdash; faculty; spent significant time at Anthropic on alignment evaluation; one of the most respected post-PhD voices on alignment.</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-label">The LeCun open-weight stance</div>
+        <p>LeCun has used his platform &mdash; FAIR Chief Scientist plus a million+ Twitter following &mdash; to push Meta toward an aggressive open-weights strategy. He often argues this publicly, in opposition to Hinton's safety-focused turn and Bengio's catastrophic-risk emphasis. The three godfathers, who shared a Turing Award, now publicly disagree on the most important questions facing the field. Deck 08 picks this up under Meta.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>CMU &mdash; Mitchell, Salakhutdinov, Cohen</h2>
+    <div class="lab-block">
+        <div class="lab-meta">Carnegie Mellon University Machine Learning Department &middot; Language Technologies Institute &middot; Pittsburgh</div>
+        <h3>The most academically structured ML programme in the US</h3>
+        <p>CMU is unique in having a standalone Machine Learning Department (since 2006, founded by Tom Mitchell) and a separate Language Technologies Institute. Together they produce a steady stream of PhDs. The lab's signature is depth and breadth in equal measure &mdash; CMU graduates are typically strong on both theory and systems.</p>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">TM</div>
+        <div>
+            <h4>Tom Mitchell</h4>
+            <div class="role">CMU since 1986; ML Department founder; Never-Ending Language Learning</div>
+            <p>The senior figure of CMU machine learning. Author of <em>Machine Learning</em> (the textbook). NELL was an early bet on continuous learning over years that anticipated some of the lifelong-learning ideas now revisited at frontier labs.</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">RS</div>
+        <div>
+            <h4>Ruslan Salakhutdinov</h4>
+            <div class="role">CMU faculty; ran Apple ML research 2016&ndash;2020</div>
+            <p>Hinton PhD, MIT postdoc, then CMU faculty since 2011. Deep Boltzmann machines, neural Turing-machine variants, lifelong learning. His 2016&ndash;2020 stint at Apple was Apple's most credible attempt to build a frontier-research arm; it ended quietly when Apple's product strategy diverged from open research.</p>
+        </div>
+    </div>
+
+    <h3>Selected CMU alumni</h3>
+    <ul>
+        <li><strong>Maxine Eskenazi, Alan Black</strong> &mdash; long-time LTI faculty; speech.</li>
+        <li><strong>Geoff Gordon</strong> &mdash; ML Department; reinforcement learning, no-regret algorithms.</li>
+        <li><strong>Aarti Singh, Pradeep Ravikumar, Ameet Talwalkar</strong> &mdash; younger ML faculty.</li>
+        <li><strong>Eric Xing</strong> &mdash; faculty; founded MBZUAI later.</li>
+        <li><strong>William Cohen</strong> &mdash; faculty; LTI; later moved to Google.</li>
+        <li><strong>Albert Gu</strong> &mdash; recent faculty; Mamba; Cartesia co-founder.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>Berkeley &mdash; Russell, Abbeel, Song, Darrell</h2>
+    <div class="lab-block">
+        <div class="lab-meta">UC Berkeley EECS &middot; Berkeley AI Research (BAIR) &middot; Center for Human-Compatible AI (CHAI)</div>
+        <h3>RL, robotics, security, and AI-safety theory</h3>
+        <p>Berkeley's ML programme is less language-focused than Stanford's but produced an outsize share of the people who built modern reinforcement learning, robotics, and AI safety. Stuart Russell's CHAI is one of the two leading academic AI-safety centres alongside Mila.</p>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">SR</div>
+        <div>
+            <h4>Stuart Russell</h4>
+            <div class="role">Berkeley professor; CHAI director</div>
+            <p>British. Co-author with Peter Norvig of <em>Artificial Intelligence: A Modern Approach</em> &mdash; the field's standard textbook for thirty years. Founded CHAI in 2016 specifically to work on AI alignment from a control-theoretic angle. Author of <em>Human Compatible</em>. Public AI-risk advocate from inside the academic mainstream.</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">PA</div>
+        <div>
+            <h4>Pieter Abbeel</h4>
+            <div class="role">Berkeley faculty; co-founder Covariant; OpenAI alumnus</div>
+            <p>Belgian. PhD with Andrew Ng at Stanford, then Berkeley faculty. Trained much of the modern deep-RL talent pool: Sergey Levine (collaborator/colleague), Chelsea Finn, Sander Dieleman, Karol Gregor, John Schulman (joint advisor with Ng). Schulman went on to found OpenAI as one of the youngest co-founders. Abbeel ran Covariant (industrial robotics, acquired by Amazon in 2024).</p>
+        </div>
+    </div>
+
+    <div class="person-card">
+        <div class="person-photo">DS</div>
+        <div>
+            <h4>Dawn Song</h4>
+            <div class="role">Berkeley faculty; founder Oasis Labs</div>
+            <p>Chinese-American. PhD at Berkeley under David Wagner; faculty since 2007. Sits at the intersection of security and ML. Her group is one of the main academic sources of work on adversarial robustness, model stealing, and AI security.</p>
+        </div>
+    </div>
+
+    <h3>Selected Berkeley alumni</h3>
+    <ul>
+        <li><strong>John Schulman</strong> &mdash; Abbeel/Ng PhD; OpenAI co-founder; PPO; alignment lead 2022&ndash;2024; Anthropic since 2024.</li>
+        <li><strong>Chelsea Finn</strong> &mdash; Abbeel/Levine PhD; Stanford faculty; Pi (now Physical Intelligence); MAML (meta-learning).</li>
+        <li><strong>Sergey Levine</strong> &mdash; Berkeley faculty; one of the most prolific roboticists.</li>
+        <li><strong>Trevor Darrell</strong> &mdash; faculty; vision, captioning.</li>
+        <li><strong>Eric Wallace, Nick Carlini</strong> &mdash; PhDs; AI-security researchers, now at OpenAI / Google.</li>
+        <li><strong>Karol Gregor, Igor Mordatch</strong> &mdash; alumni; DeepMind / Google.</li>
+        <li><strong>Anca Dragan</strong> &mdash; faculty; alignment / robotics. Joined Google DeepMind 2023.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>MIT, Princeton, Allen AI &amp; Others</h2>
+    <p>The remaining major academic centres for LLM-relevant research, more briefly.</p>
+
+    <div class="lab-block">
+        <h3>MIT CSAIL &amp; CBMM</h3>
+        <p>MIT's contributions are scattered across several groups. <strong>Tommi Jaakkola</strong> for theory; <strong>Regina Barzilay</strong> for chemistry/biology applications; <strong>Antonio Torralba</strong> for vision; <strong>Pulkit Agrawal</strong> for robotics; <strong>Jacob Andreas</strong> for language and reasoning. The Center for Brains, Minds and Machines (CBMM) under Tomaso Poggio runs a separate cognitive-science-flavoured programme. MIT does not have a single dominant LLM lab the way Stanford or CMU does, but its alumni show up everywhere &mdash; Sam Altman dropped out of Stanford CS but several OpenAI co-founders went through MIT.</p>
+    </div>
+
+    <div class="lab-block">
+        <h3>Princeton</h3>
+        <p>Smaller programme but highly concentrated. <strong>Sanjeev Arora</strong> on theory of deep learning; <strong>Arvind Narayanan</strong> on AI policy and de-hyped evaluation; <strong>Danqi Chen</strong> (Manning PhD) on retrieval and pretraining; <strong>Tri Dao</strong> (R&eacute; PhD) on FlashAttention and architectures; <strong>Karthik Narasimhan</strong> on agents and RL. Punches above its weight given its size.</p>
+    </div>
+
+    <div class="lab-block">
+        <h3>Allen Institute for AI (AI2)</h3>
+        <p>Founded 2014 by Paul Allen in Seattle. Run for years by Oren Etzioni, then Ali Farhadi from 2023. Sits between an academic lab and an industry research lab. ELMo (Peters et al, 2018) was theirs; OLMo, the most respected fully-open-weights research model in 2024&ndash;2025, is theirs. AI2 explicitly preserves the publish-everything academic ethos that disappeared from frontier labs after 2022.</p>
+    </div>
+
+    <div class="lab-block">
+        <h3>Other notable groups</h3>
+        <p><strong>EPFL</strong> (Switzerland, Martin Jaggi's group), <strong>ETH Z&uuml;rich</strong> (Thomas Hofmann), <strong>Edinburgh</strong> (Mirella Lapata, Ivan Titov), <strong>Cambridge</strong> (David Krueger before AISI, Carl Henrik Ek), <strong>Oxford</strong> (Yarin Gal, Phil Torr), <strong>UCL</strong> (Sebastian Riedel before Meta, Ed Grefenstette), <strong>Tsinghua &amp; Peking</strong> (the senior Chinese ML faculty &mdash; Andrew Yao, Maosong Sun, Xipeng Qiu &mdash; whose students populate DeepSeek, Qwen, Moonshot, Zhipu). Deck 09 picks up the China side.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>The Advisor Tree</h2>
+    <p>One way to read modern LLM research is as a small, dense advisor graph. This slide draws the rough shape, anchored on Hinton, Bengio and LeCun.</p>
+
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border">
+            <h4>Hinton tree (selected)</h4>
+            <p><strong>Hinton</strong> &rarr; Sutskever (OpenAI / SSI), Krizhevsky, Salakhutdinov (CMU), Graves (DeepMind), Mnih (DeepMind), Vinyals (DeepMind), Hassabis (collaborator), Goodfellow (postdoc, also Bengio).</p>
+            <p>Through students: Sutskever &rarr; OpenAI co-founders; Salakhutdinov &rarr; CMU lineage of dozens of PhDs; Graves &rarr; LSTM-era DeepMind cohort.</p>
+        </div>
+        <div class="diagram-panel y">
+            <h4>Bengio tree (selected)</h4>
+            <p><strong>Bengio</strong> &rarr; Goodfellow, Bahdanau, Cho (postdoc), Larochelle (Cohere), Courville (Mila), Vincent (Mila), Mensch (Mistral co-founder).</p>
+            <p>Through students: Goodfellow &rarr; Apple/DeepMind; Cho &rarr; NYU lineage; Mensch &rarr; Mistral and the European frontier-lab line.</p>
+        </div>
+        <div class="diagram-panel g">
+            <h4>LeCun tree (selected)</h4>
+            <p><strong>LeCun</strong> &rarr; Sumit Chopra, Marc'Aurelio Ranzato, Camille Couprie, several Bell Labs collaborators, Kavukcuoglu (postdoc &rarr; DeepMind CTO).</p>
+            <p>FAIR alumni: Mike Lewis (Anthropic), Luke Zettlemoyer (UW/FAIR), Naman Goyal (Mistral), Marie-Anne Lachaux (Mistral), Tim Lacroix (Mistral co-founder).</p>
+        </div>
+    </div>
+
+    <div class="callout">
+        <div class="callout-label">A useful pattern</div>
+        <p>Look at any frontier lab's senior research staff and you can almost always trace each of them, in two or fewer hops, to one of the three godfathers. <strong>Hinton</strong>'s descendants cluster at OpenAI, Google DeepMind and CMU. <strong>Bengio</strong>'s cluster at Mila, Mistral, Cohere, and Anthropic's safety-leaning alignment team. <strong>LeCun</strong>'s cluster at Meta AI, Mistral (notable: <em>both</em> Bengio and LeCun feed Mistral) and a scattering of CV-flavoured labs.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-11">
+    <div class="slide-number">11</div>
+    <h2>Why Industry Took Over</h2>
+    <p>The university labs are still excellent. The reasons they are no longer the centre of frontier work are structural and unlikely to reverse.</p>
+
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel r">
+            <h4>The four structural facts</h4>
+            <ul>
+                <li><strong>Compute.</strong> A single 100,000-H100 cluster costs ~$5 B all-in. Universities cannot build them; the largest US academic cluster has perhaps 2,000 H100-equivalents.</li>
+                <li><strong>Data.</strong> Frontier-quality pretraining data is curated, RL-evaluated, and increasingly proprietary. Academic labs cannot replicate it.</li>
+                <li><strong>Compensation.</strong> Senior frontier-lab compensation is $1&ndash;5 M/year. Faculty positions pay $200&ndash;500 K. The gap is too large to bridge with non-financial perks.</li>
+                <li><strong>Speed.</strong> The frontier moves on a 6-month cadence. Academic publication cycles are 12&ndash;24 months.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel g">
+            <h4>What that leaves academia</h4>
+            <ul>
+                <li><strong>Theory.</strong> Where loss landscapes come from, why scaling laws hold, what generalisation means.</li>
+                <li><strong>Interpretability and safety.</strong> Long-horizon, conceptually deep, doesn't need frontier compute.</li>
+                <li><strong>Evaluation.</strong> Frontier labs do not impartially evaluate themselves; HELM, Inspect AI, METR all benefit from academic involvement.</li>
+                <li><strong>Education.</strong> The next generation of frontier-lab hires.</li>
+                <li><strong>Application domains.</strong> Biology (Genentech, Recursion), materials, climate, healthcare &mdash; where the data and the experts are still in academia.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="callout y">
+        <div class="callout-label">The CRFM model</div>
+        <p>Stanford CRFM is the closest existing example of an academic group that has stayed strategically relevant in the LLM era. It does so by (a) not competing on frontier capabilities, (b) building public benchmarks the industry actually uses, and (c) collaborating directly with frontier labs. It is the template most other academic centres are quietly trying to copy.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-12">
+    <div class="slide-number">12</div>
+    <h2>Cheat Sheet</h2>
+
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Twelve labs to know</h4>
+            <ul>
+                <li>Toronto / Vector &mdash; Hinton lineage.</li>
+                <li>Mila / Montreal &mdash; Bengio.</li>
+                <li>Stanford NLP &mdash; Manning.</li>
+                <li>Stanford ML / CRFM &mdash; Liang, R&eacute;.</li>
+                <li>NYU &mdash; LeCun, Cho.</li>
+                <li>CMU MLD / LTI &mdash; Salakhutdinov, Mitchell.</li>
+                <li>Berkeley BAIR / CHAI &mdash; Russell, Abbeel, Song.</li>
+                <li>MIT CSAIL / CBMM.</li>
+                <li>Princeton &mdash; Arora, Narayanan, Chen, Dao.</li>
+                <li>Allen AI &mdash; Etzioni / Farhadi.</li>
+                <li>Tsinghua / Peking U &mdash; the senior Chinese pipeline.</li>
+                <li>EPFL / ETH / Cambridge / Oxford / Edinburgh.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel y">
+            <h4>Three lineages</h4>
+            <ul>
+                <li>Hinton &rarr; OpenAI / DeepMind / CMU.</li>
+                <li>Bengio &rarr; Mila / Mistral / Cohere.</li>
+                <li>LeCun &rarr; Meta AI / FAIR / Mistral.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel g">
+            <h4>Why industry took over</h4>
+            <ul>
+                <li>Compute.</li>
+                <li>Data.</li>
+                <li>Compensation.</li>
+                <li>Speed.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel r">
+            <h4>Where academia still leads</h4>
+            <ul>
+                <li>Interpretability &amp; safety.</li>
+                <li>Public evaluation (HELM, OLMo).</li>
+                <li>Theory.</li>
+                <li>Domain applications (bio, materials).</li>
+                <li>Training the next generation.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_LLM_History">LLM History series</a> in the <a href="https://github.com/BrendanJamesLynskey/LLMs">LLMs hub</a>.</p>
+    <p style="margin-top: 0.5rem;"><a href="https://brendanjameslynskey.github.io/LLM_History_03_The_Transformer/">&larr; 03 The Transformer Paper</a> &middot; <a href="https://brendanjameslynskey.github.io/LLM_History_05_OpenAI/">05 OpenAI &rarr;</a></p>
+</footer>
+
+</body>
+</html>
